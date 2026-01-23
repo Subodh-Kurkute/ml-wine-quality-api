@@ -82,12 +82,83 @@ This repository can be used in two modes:
 - Run the container
 - Send a prediction request to the API endpoint
 
+### End-to-End Validation (PowerShell)
+
+This command runs the complete local workflow:
+- executes tests
+- builds the Docker image
+- starts the API container
+- checks health endpoint
+- sends a prediction request
+- cleans up the container
+
+> ⚡ **One-command end-to-end validation (PowerShell)**
+>
+> Paste and run from the project root. This will test, build, run, validate, and clean up the API.
+
+```powershell
+$ErrorActionPreference="Stop";
+
+pytest -v;
+
+docker build -t wine-api:latest .;
+
+docker run -d --name wine_api -p 8000:8000 wine-api:latest;
+
+Start-Sleep -Seconds 5;
+
+Invoke-RestMethod http://127.0.0.1:8000/health;
+
+Invoke-RestMethod -Uri "http://127.0.0.1:8000/predict" -Method Post -ContentType "application/json" -InFile "payload.json";
+
+docker stop wine_api;
+
+docker rm wine_api;
+```
+
+**Requirements**
+- Docker running
+- Python + pytest installed
+- PowerShell (Windows) or compatible shell
+
+
 ### 2. Debug / developer mode
 
 - Run `train.py` locally
 - Start the API using Uvicorn
 - Validate predictions via browser or HTTP requests
 - Execute pytest to verify API behavior
+
+> 🐛 **Debug mode: build image, run API, inspect behavior**
+>
+> Intended for local debugging. Runs the container in the foreground so logs are visible.
+
+```powershell
+$ErrorActionPreference="Stop";
+
+# 1️⃣ Install dependencies (if not already installed)
+pip install -r requirements.txt;
+
+# 2️⃣ Run training & evaluation locally
+python train.py;
+
+# 3️⃣ Start the API using Uvicorn (debug mode with hot reload)
+uvicorn api:app --host 127.0.0.1 --port 8000 --reload;
+
+# 4️⃣ Interact with the API via browser (GUI)
+# Open the following URLs:
+# - Swagger UI (interactive GUI for predictions):
+#   http://127.0.0.1:8000/docs
+# - Health check:
+#   http://127.0.0.1:8000/health
+
+# 5️⃣ Validate predictions via HTTP (run in another terminal)
+# Invoke-RestMethod -Uri "http://127.0.0.1:8000/predict" -Method Post -ContentType "application/json" -InFile "payload.json"
+
+# 6️⃣ Execute pytest to verify API behavior
+# pytest -v
+
+```
 
 ---
 
