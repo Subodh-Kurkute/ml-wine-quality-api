@@ -148,15 +148,15 @@ uvicorn api:app --host 127.0.0.1 --port 8000 --reload;
 # 4️⃣ Interact with the API via browser (GUI)
 # Open the following URLs:
 # - Swagger UI (interactive GUI for predictions):
-#   http://127.0.0.1:8000/docs
+http://127.0.0.1:8000/docs
 # - Health check:
-#   http://127.0.0.1:8000/health
+http://127.0.0.1:8000/health
 
 # 5️⃣ Validate predictions via HTTP (run in another terminal)
-# Invoke-RestMethod -Uri "http://127.0.0.1:8000/predict" -Method Post -ContentType "application/json" -InFile "payload.json"
+Invoke-RestMethod -Uri "http://127.0.0.1:8000/predict" -Method Post -ContentType "application/json" -InFile "payload.json"
 
 # 6️⃣ Execute pytest to verify API behavior
-# pytest -v
+ pytest -v
 
 ```
 
