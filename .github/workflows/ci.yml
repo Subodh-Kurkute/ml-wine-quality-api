@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+
+jobs:
+  test-train-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # 1) Train locally (creates model.joblib / artifacts used by the API)
+      - name: Train model
+        run: |
+          python train.py
+
+      # 2) Start API in background
+      - name: Start API (uvicorn)
+        run: |
+          nohup uvicorn api:app --host 127.0.0.1 --port 8000 > uvicorn.log 2>&1 &
+          echo $! > uvicorn.pid
+
+      # 3) Wait until health endpoint is ready
+      - name: Wait for API
+        run: |
+          for i in {1..30}; do
+            if curl -s http://127.0.0.1:8000/health > /dev/null; then
+              echo "API is up"
+              exit 0
+            fi
+            echo "Waiting for API..."
+            sleep 1
+          done
+          echo "API did not start in time"
+          echo "---- uvicorn.log ----"
+          cat uvicorn.log || true
+          exit 1
+
+      # 4) Smoke test /predict using payload.json
+      - name: Smoke test predict endpoint
+        run: |
+          curl -s -X POST http://127.0.0.1:8000/predict \
+            -H "Content-Type: application/json" \
+            --data-binary "@payload.json"
+
+      # 5) Run pytest
+      - name: Run tests
+        run: |
+          pytest -v
+
+      # Always stop the server & show logs if something fails
+      - name: Stop API
+        if: always()
+        run: |
+          if [ -f uvicorn.pid ]; then
+            kill $(cat uvicorn.pid) || true
+          fi
+          echo "---- uvicorn.log ----"
+          cat uvicorn.log || true
