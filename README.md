@@ -63,9 +63,10 @@ This repository can be used in two modes:
 
 ---
 
-## 📐 Project Architecture (Block Diagram)
+##  Project Architecture (Block Diagram)
 
-![Project Architecture](docs/block_diagram.png)
+![Project Architecture](docs/Project%20architecture.png)
+
 
 **High-level flow:**
 - Dataset is downloaded programmatically from the UCI repository
