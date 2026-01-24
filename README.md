@@ -63,14 +63,18 @@ This repository can be used in two modes:
 
 ---
 
-## Training workflow
+## 📐 Project Architecture (Block Diagram)
 
-1. Download and persist dataset
-2. Create binary target variable
-3. Perform stratified train/validation split
-4. Train the selected model
-5. Evaluate performance on validation data
-6. Save trained model artifact for inference
+![Project Architecture](docs/block_diagram.png)
+
+**High-level flow:**
+- Dataset is downloaded programmatically from the UCI repository
+- Training pipeline performs preprocessing, splitting, and model training
+- The trained model is saved as a serialized artifact
+- FastAPI loads the model for inference
+- Predictions are served via REST endpoints
+- The entire system runs inside a Docker container
+
 
 ---
 
@@ -160,22 +164,32 @@ Invoke-RestMethod -Uri "http://127.0.0.1:8000/predict" -Method Post -ContentType
 
 ```
 
+## 🔄 CI Workflow & Key Learnings
+
+### Continuous Integration (GitHub Actions)
+- CI is implemented using GitHub Actions
+- Workflow runs automatically on every `push` and `pull_request`
+- Dependencies are installed in a clean environment
+- Automated tests (`pytest`) validate core logic and API endpoints
+- Prevents broken or non-deployable code from being merged
+
+### What I Learned
+- Modularization of ML code for maintainability and reuse
+- Containerization using Docker for reproducible execution
+- Serving ML models via FastAPI for production-style inference
+- Designing an end-to-end ML workflow beyond notebooks
+- Integrating CI to improve reliability and deployment confidence
+
+
 ---
 
-## Limitations
+## Limitations & Future Improvements
 
-- No cloud deployment (local Docker only)
-- Several parameters are hardcoded and could be externalized via configuration or argparse
-- Model retraining is manual
-- No monitoring or logging for deployed predictions
+- Currently limited to local Docker execution; no cloud deployment
+- Several parameters are hardcoded and could be externalized via configuration or `argparse`
+- Model retraining is manual and not automated
+- No experiment tracking implemented
+- Limited monitoring and logging for deployed inference requests
 
----
-
-## Future improvements
-
-- Add configurable training parameters
-- Introduce automated retraining and CI/CD
-- Add experiment tracking
-- Deploy to a cloud environment
-- Improve validation and monitoring for inference requests
+Planned improvements include introducing configurable training parameters, adding experiment tracking, deploying the service to a cloud environment, and improving validation, monitoring, and observability for production inference.
 
